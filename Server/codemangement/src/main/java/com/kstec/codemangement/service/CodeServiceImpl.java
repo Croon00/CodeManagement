@@ -5,7 +5,6 @@ import com.kstec.codemangement.model.Repository.CodeRepository;
 import com.kstec.codemangement.model.Repository.CodeSearchLogRepository;
 import com.kstec.codemangement.model.Repository.UserRepository;
 import com.kstec.codemangement.model.dto.requestdto.CodeRequestDto;
-import com.kstec.codemangement.model.dto.requestdto.CodeSearchLogRequestDto;
 import com.kstec.codemangement.model.dto.responsedto.CodeResponseDto;
 import com.kstec.codemangement.model.dto.responsedto.CodeSearchLogResponseDto;
 import com.kstec.codemangement.model.entity.Code;
