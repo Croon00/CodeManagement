@@ -16,9 +16,15 @@
 - **Axios**: HTTP 요청 처리  
 - **Recoil**: 상태 관리 라이브러리
 
+### ERD 설계
+
+![Image](https://github.com/user-attachments/assets/d191ff0e-c9ab-4afd-aee5-3db68c6e7241)
+
 ### 디렉토리 구조
 
 ![Image](https://github.com/user-attachments/assets/2d9ec789-7218-4d66-aef5-ba006553d00a)
 
-
 ![Image](https://github.com/user-attachments/assets/1f05ea65-ca16-4e60-a4be-689fe3151745)
+
+### API 구조
+![Image](https://github.com/user-attachments/assets/23f1ae9a-d219-47fe-8ae8-8d7b6aedde13)
