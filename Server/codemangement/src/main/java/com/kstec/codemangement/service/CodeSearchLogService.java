@@ -13,5 +13,6 @@ public interface CodeSearchLogService {
      */
     List<CodeResponseDto> getPopularCodesLastWeek();
 
-    void saveSearchLog(String userId, Code code);
+    void saveSearchLogByUser(String userId, Code code);
+    void saveSearchLog(Code code);
 }

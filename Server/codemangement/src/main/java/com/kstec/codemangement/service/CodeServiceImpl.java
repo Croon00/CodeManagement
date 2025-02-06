@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -57,9 +58,10 @@ public class CodeServiceImpl implements CodeService {
      * 코드 조회시 로그 남기기 위한 User 정보 확인 메서드
      * @return String
      */
-    private String getAuthenticatedUserIdOrNull() {
+    private CustomUserDetails getAuthenticatedUserIdOrNull() {
         try {
-            return (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            return (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         } catch (Exception e) {
             return null;
         }
@@ -90,7 +92,7 @@ public class CodeServiceImpl implements CodeService {
      * @return List<CodeResponseDto>
      */
     @Override
-    @Transactional// 읽기 전용 트랜잭션
+    @Transactional(readOnly = true) // 검색은 읽기 전용
     public List<CodeResponseDto> searchCodes(String searchType, String query, String startDate, String endDate, Boolean activated, Long parentCodeId) {
         List<Code> codes;
 
@@ -103,43 +105,57 @@ public class CodeServiceImpl implements CodeService {
             codes = codeRepository.findAllWithParentCode();
         }
 
-        // 필터링 로직 동일
+        // 부모 코드 필터링
         if (parentCodeId != null) {
             codes = codes.stream()
                     .filter(code -> code.getParentCodeId() != null && code.getParentCodeId().getCodeId().equals(parentCodeId))
                     .collect(Collectors.toList());
         }
 
+        // 활성 상태 필터링
         if (activated != null) {
             codes = codes.stream()
                     .filter(code -> code.isActivated() == activated)
                     .collect(Collectors.toList());
         }
 
+        // 날짜 필터링 (`yyyy-MM-dd` → `LocalDate` 변환 후 `LocalDateTime` 변환)
         if (startDate != null && endDate != null) {
             try {
-                LocalDateTime start = LocalDateTime.parse(startDate);
-                LocalDateTime end = LocalDateTime.parse(endDate);
+                LocalDate startLocalDate = LocalDate.parse(startDate); // `yyyy-MM-dd` 형식 변환
+                LocalDate endLocalDate = LocalDate.parse(endDate);
+
+                // `LocalDate`를 `LocalDateTime`으로 변환 (00:00:00 ~ 23:59:59)
+                LocalDateTime startDateTime = startLocalDate.atStartOfDay(); // 00:00:00
+                LocalDateTime endDateTime = endLocalDate.atTime(23, 59, 59); // 23:59:59
+
+                // 필터링 적용
                 codes = codes.stream()
-                        .filter(code -> code.getCreatedAt().isAfter(start) && code.getCreatedAt().isBefore(end))
+                        .filter(code -> code.getCreatedAt().isAfter(startDateTime) && code.getCreatedAt().isBefore(endDateTime))
                         .collect(Collectors.toList());
             } catch (DateTimeParseException e) {
-                throw new RuntimeException("Invalid date format. Use: yyyy-MM-dd'T'HH:mm:ss", e);
+                throw new RuntimeException("Invalid date format. Use: yyyy-MM-dd", e);
             }
         }
 
         // 사용자 ID 확인
-        String authenticatedUserId = getAuthenticatedUserIdOrNull();
+        CustomUserDetails authenticatedUserId = getAuthenticatedUserIdOrNull();
 
         // **로그인된 사용자에 한해 검색 기록 저장**
         if (authenticatedUserId != null && !"anonymousUser".equals(authenticatedUserId)) {
-            codes.forEach(code -> codeSearchLogService.saveSearchLog(authenticatedUserId, code));
+
+            codes.forEach(code -> codeSearchLogService.saveSearchLogByUser(authenticatedUserId.getUserId(), code));
+        }
+        // **로그인 안한 상태에서 검색 기록 저장**
+        else {
+            codes.forEach(code -> codeSearchLogService.saveSearchLog(code));
         }
 
         return codes.stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
+
 
 
     /**

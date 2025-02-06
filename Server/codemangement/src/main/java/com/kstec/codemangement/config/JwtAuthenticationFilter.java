@@ -3,6 +3,7 @@ package com.kstec.codemangement.config;
 
 import com.kstec.codemangement.model.Repository.UserRepository;
 import com.kstec.codemangement.model.entity.User;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,21 +36,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
             String userId = jwtTokenProvider.getUserId(token);
+            Claims claims = jwtTokenProvider.getClaims(token); // JWT에서 직접 role 가져오기
+            String role = "ROLE_" + claims.get("role", String.class); // role 값 추출
 
-            // DB에서 사용자 정보 조회
-            User user = userRepository.findById(userId).orElse(null);
-            if (user != null && user.getRole() != null) {
-                String role = "ROLE_" + user.getRole().name(); // 예: "ROLE_ADMIN", "ROLE_USER"
-
-                // 사용자 인증 정보 생성 및 SecurityContext 설정
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        new CustomUserDetails(userId, Collections.singletonList(new SimpleGrantedAuthority(role))),
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority(role))
-                );
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            // DB 조회 없이 SecurityContext 설정
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    new CustomUserDetails(userId, Collections.singletonList(new SimpleGrantedAuthority(role))),
+                    null,
+                    Collections.singletonList(new SimpleGrantedAuthority(role))
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
         filterChain.doFilter(request, response);
     }
 

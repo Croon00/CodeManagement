@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+
 @Service
 public class userServiceImpl implements UserService {
 
@@ -20,6 +21,12 @@ public class userServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+
+    /**
+     * 유저등록
+     * @param userRequestDto
+     * @return
+     */
     @Override
     public UserResponseDto registerUser(UserRequestDto userRequestDto) {
         // 중복된 loginId 확인

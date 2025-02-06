@@ -9,6 +9,7 @@ import com.kstec.codemangement.model.entity.CodeSearchLog;
 import com.kstec.codemangement.model.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -51,8 +52,8 @@ public class CodeSearchLogServiceImpl implements CodeSearchLogService {
     }
 
     @Override
-    @Transactional // 데이터 저장을 위한 쓰기 가능한 트랜잭션
-    public void saveSearchLog(String userId, Code code) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 데이터 저장을 위한 쓰기 가능한 트랜잭션
+    public void saveSearchLogByUser(String userId, Code code) {
         CodeSearchLog searchLog = new CodeSearchLog();
         searchLog.setCode(code);
 
@@ -64,6 +65,15 @@ public class CodeSearchLogServiceImpl implements CodeSearchLogService {
         }
 
         codeSearchLogRepository.save(searchLog); // 로그 저장
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)// 데이터 저장을 위한 쓰기 가능한 트랜잭션
+    public void saveSearchLog(Code code) {
+        CodeSearchLog searchLog = new CodeSearchLog();
+        searchLog.setCode(code);
+
+        codeSearchLogRepository.save(searchLog);
     }
 
 }
