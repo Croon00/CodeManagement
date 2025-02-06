@@ -69,10 +69,7 @@ function Home() {
               popularCodes.map((code, index) => (
                 <React.Fragment key={code.codeId}>
                   <ListItem>
-                    <ListItemText
-                      primary={`${index + 1}. ${code.codeName}`}
-                      secondary={`검색 횟수: ${code.searchCount}`}
-                    />
+                    <ListItemText primary={`${index + 1}. ${code.codeName}`} />
                   </ListItem>
                   {index < popularCodes.length - 1 && <Divider />}{" "}
                   {/* 구분선 */}

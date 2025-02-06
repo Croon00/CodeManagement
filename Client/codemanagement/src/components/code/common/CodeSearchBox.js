@@ -15,35 +15,30 @@ import { parentCodeState } from "../../../state/parentCodeState";
 import ParentCodeModal from "./ParentCodeModal";
 
 function CodeSearchBox({ onSearch }) {
-  const parentCode = useRecoilValue(parentCodeState); // 부모 코드 상태 읽기
-  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열기 상태
+  const parentCode = useRecoilValue(parentCodeState);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchParams, setSearchParams] = useState({
     searchType: "codeName",
     searchQuery: "",
     startDate: "",
     endDate: "",
-    codeStatus: "all", // 추가: 활성 상태 (all, active, inactive)
+    codeStatus: "all",
   });
 
   const handleSearch = () => {
     const transformedSearchParams = {
       searchType: searchParams.searchType,
       query: searchParams.searchQuery,
-      startDate: searchParams.startDate
-        ? new Date(searchParams.startDate).toISOString()
-        : null,
-      endDate: searchParams.endDate
-        ? new Date(searchParams.endDate).toISOString()
-        : null,
+      startDate: searchParams.startDate || null,
+      endDate: searchParams.endDate || null,
       activated:
         searchParams.codeStatus === "all"
           ? null
           : searchParams.codeStatus === "active",
       parentCodeId: parentCode ? parentCode.codeId : null,
     };
-    console.log(transformedSearchParams);
 
-    // 부모 컴포넌트로 변환된 검색 조건 전달
+    console.log("검색 조건:", transformedSearchParams);
     onSearch(transformedSearchParams);
   };
 
@@ -102,18 +97,11 @@ function CodeSearchBox({ onSearch }) {
               searchQuery: e.target.value,
             }))
           }
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()} // ✅ Enter 키 이벤트 추가
         />
-
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ height: "56px" }}
-          onClick={handleSearch}
-        >
-          검색
-        </Button>
       </Box>
 
+      {/* 날짜 선택 필드 */}
       <Box
         sx={{
           marginTop: 3,
@@ -123,24 +111,42 @@ function CodeSearchBox({ onSearch }) {
         }}
       >
         <TextField
-          label="선택된 부모 코드"
+          label="시작 날짜"
+          type="date"
           variant="outlined"
           sx={{
             backgroundColor: "white",
             borderRadius: 1,
             flex: 1,
           }}
-          value={parentCode ? parentCode.codeName : ""}
-          InputProps={{ readOnly: true }}
-          onClick={() => setIsModalOpen(true)} // 모달 열기
+          InputLabelProps={{ shrink: true }}
+          value={searchParams.startDate}
+          onChange={(e) =>
+            setSearchParams((prev) => ({
+              ...prev,
+              startDate: e.target.value,
+            }))
+          }
         />
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => setIsModalOpen(true)}
-        >
-          부모 코드 검색
-        </Button>
+
+        <TextField
+          label="종료 날짜"
+          type="date"
+          variant="outlined"
+          sx={{
+            backgroundColor: "white",
+            borderRadius: 1,
+            flex: 1,
+          }}
+          InputLabelProps={{ shrink: true }}
+          value={searchParams.endDate}
+          onChange={(e) =>
+            setSearchParams((prev) => ({
+              ...prev,
+              endDate: e.target.value,
+            }))
+          }
+        />
       </Box>
 
       {/* 활성 상태 선택 */}
@@ -160,6 +166,48 @@ function CodeSearchBox({ onSearch }) {
           <FormControlLabel value="active" control={<Radio />} label="현존" />
           <FormControlLabel value="inactive" control={<Radio />} label="폐지" />
         </RadioGroup>
+      </Box>
+
+      {/* 부모 코드 검색 */}
+      <Box
+        sx={{
+          marginTop: 3,
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
+        }}
+      >
+        <TextField
+          label="선택된 부모 코드"
+          variant="outlined"
+          sx={{
+            backgroundColor: "white",
+            borderRadius: 1,
+            flex: 1,
+          }}
+          value={parentCode ? parentCode.codeName : ""}
+          InputProps={{ readOnly: true }}
+          onClick={() => setIsModalOpen(true)}
+        />
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setIsModalOpen(true)}
+        >
+          부모 코드 검색
+        </Button>
+      </Box>
+
+      {/* 검색 버튼 - 오른쪽 하단 사각형 버튼으로 변경 */}
+      <Box sx={{ marginTop: 3, display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ width: 120, height: 40 }} // ✅ 크기 조절하여 작은 사각형 버튼으로
+          onClick={handleSearch}
+        >
+          검색
+        </Button>
       </Box>
 
       {/* 부모 코드 검색 모달 */}
