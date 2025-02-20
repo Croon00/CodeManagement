@@ -44,6 +44,6 @@ export const updateCode = async (codeId, codeData) => {
 
 // Top 10 검색된 코드 가져오기
 export const getPopularCodes = async () => {
-  const response = await publicAxios.get("/api/code-search-log/popular");
+  const response = await publicAxios.get("/api/code-search-log/recent");
   return response.data;
 };

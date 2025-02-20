@@ -30,6 +30,32 @@ privateAxios.interceptors.request.use((config) => {
   return config;
 });
 
+// 공통 에러 핸들러
+const handleApiError = (error) => {
+  if (!error.response) {
+    console.error("네트워크 오류 또는 서버 응답 없음");
+    alert("네트워크 오류가 발생했습니다. 다시 시도해주세요.");
+    return Promise.reject(error);
+  }
+
+  const status = error.response.status;
+
+  if (status === 401) {
+    console.warn("401 Unauthorized: 인증이 필요합니다.");
+    alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+    localStorage.removeItem("accessToken");
+    window.location.href = "/login";
+  } else if (status === 403) {
+    console.warn("403 Forbidden: 권한이 없습니다.");
+    alert("이 작업을 수행할 권한이 없습니다.");
+  } else if (status === 500) {
+    console.error("500 Internal Server Error: 서버 오류 발생");
+    alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+  }
+
+  return Promise.reject(error);
+};
+
 // 응답 인터셉터: Access Token 갱신 로직 포함
 privateAxios.interceptors.response.use(
   (response) => response,
@@ -74,6 +100,6 @@ privateAxios.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error);
+    return handleApiError(error); // ✅ 공통 에러 핸들러 적용
   }
 );
