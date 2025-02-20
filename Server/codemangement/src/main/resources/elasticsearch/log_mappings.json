@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "codeId": {
+      "type": "long"
+    },
+    "codeName": {
+      "type": "text",
+      "analyzer": "ngram_analyzer",
+      "search_analyzer": "standard"
+    },
+    "userId": {
+      "type": "keyword"
+    },
+    "searchedAt": {
+      "type": "date",
+      "format": "date_optional_time"
+    }
+  }
+}

@@ -1,18 +1,21 @@
 package com.kstec.codemangement.service;
 
-import com.kstec.codemangement.model.Repository.CodeRepository;
-import com.kstec.codemangement.model.Repository.CodeSearchLogRepository;
-import com.kstec.codemangement.model.Repository.UserRepository;
-import com.kstec.codemangement.model.dto.responsedto.CodeResponseDto;
-import com.kstec.codemangement.model.entity.Code;
-import com.kstec.codemangement.model.entity.CodeSearchLog;
-import com.kstec.codemangement.model.entity.User;
+import com.kstec.codemangement.model.document.CodeSearchLogDocument;
+import com.kstec.codemangement.model.repository.CodeSearchLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,58 +23,75 @@ import java.util.stream.Collectors;
 public class CodeSearchLogServiceImpl implements CodeSearchLogService {
 
     @Autowired
+    private ElasticsearchOperations elasticsearchOperations;
+
+    @Autowired
     private CodeSearchLogRepository codeSearchLogRepository;
 
-    @Autowired
-    private CodeRepository codeRepository;
+    /**
+     * 최근 7일간 검색된 기록을 최신순으로 가져오기 (최대 10개)
+     */
+    public List<CodeSearchLogDocument> getRecentSearchesLastWeek() {
+        try {
+            LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7); // ✅ 변경됨
+            Criteria criteria = Criteria.where("searchedAt").greaterThanEqual(sevenDaysAgo);
+            Query query = new CriteriaQuery(criteria);
+            query.setPageable(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "searchedAt")));
 
-    @Autowired
-    private UserRepository userRepository;
+            SearchHits<CodeSearchLogDocument> searchHits = elasticsearchOperations.search(query, CodeSearchLogDocument.class);
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<CodeResponseDto> getPopularCodesLastWeek() {
-        List<Object[]> results = codeSearchLogRepository.findMostSearchedCodesLastWeek();
+            return searchHits.getSearchHits().stream()
+                    .map(hit -> hit.getContent())
+                    .collect(Collectors.toList());
 
-        return results.stream()
-                .map(result -> {
-                    Long codeId = (Long) result[0];
-                    Long searchCount = (Long) result[1];
-
-                    Code code = codeRepository.findById(codeId)
-                            .orElseThrow(() -> new RuntimeException("Code not found with ID: " + codeId));
-
-                    return CodeResponseDto.builder()
-                            .codeId(code.getCodeId())
-                            .codeName(code.getCodeName())
-                            .codeValue(code.getCodeValue())
-                            .searchCount(searchCount) // 검색 횟수 추가
-                            .build();
-                })
-                .collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
     }
 
-    @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW) // 데이터 저장을 위한 쓰기 가능한 트랜잭션
-    public void saveSearchLogByUser(String userId, Code code) {
-        CodeSearchLog searchLog = new CodeSearchLog();
-        searchLog.setCode(code);
 
-        // 사용자 정보 설정
-        if (userId != null) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-            searchLog.setUser(user);
+
+    /**
+     * ✅ 검색 로그 Batch Insert (최적화)
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveAllSearchLogs(List<CodeSearchLogDocument> logs) {
+        if (logs == null || logs.isEmpty()) {
+            return;
         }
 
-        codeSearchLogRepository.save(searchLog); // 로그 저장
+        codeSearchLogRepository.saveAll(logs);
     }
 
+    /**
+     * 검색 로그 저장 (로그인된 사용자, 개별 저장)
+     */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)// 데이터 저장을 위한 쓰기 가능한 트랜잭션
-    public void saveSearchLog(Code code) {
-        CodeSearchLog searchLog = new CodeSearchLog();
-        searchLog.setCode(code);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveSearchLogByUser(String userId, Long codeId, String codeName) {
+        CodeSearchLogDocument searchLog = CodeSearchLogDocument.builder()
+                .codeId(codeId)
+                .codeName(codeName)
+                .userId(userId)
+                .searchedAt(LocalDateTime.now()) // ✅ 변경됨
+                .build();
+
+        codeSearchLogRepository.save(searchLog);
+    }
+
+    /**
+     * 검색 로그 저장 (비로그인 사용자, 개별 저장)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveSearchLog(Long codeId, String codeName) {
+        CodeSearchLogDocument searchLog = CodeSearchLogDocument.builder()
+                .codeId(codeId)
+                .codeName(codeName)
+                .userId(null)
+                .searchedAt(LocalDateTime.now()) // ✅ 변경됨
+                .build();
 
         codeSearchLogRepository.save(searchLog);
     }

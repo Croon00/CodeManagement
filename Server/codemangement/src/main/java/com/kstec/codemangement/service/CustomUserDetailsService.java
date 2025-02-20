@@ -1,7 +1,7 @@
 package com.kstec.codemangement.service;
 
 import com.kstec.codemangement.config.CustomUserDetails;
-import com.kstec.codemangement.model.Repository.UserRepository;
+import com.kstec.codemangement.model.repository.UserRepository;
 import com.kstec.codemangement.model.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

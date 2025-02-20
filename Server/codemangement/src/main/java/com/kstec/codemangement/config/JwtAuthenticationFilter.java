@@ -1,8 +1,7 @@
 package com.kstec.codemangement.config;
 
 
-import com.kstec.codemangement.model.Repository.UserRepository;
-import com.kstec.codemangement.model.entity.User;
+import com.kstec.codemangement.model.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

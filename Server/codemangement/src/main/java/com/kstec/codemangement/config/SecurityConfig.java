@@ -1,6 +1,6 @@
 package com.kstec.codemangement.config;
 
-import com.kstec.codemangement.model.Repository.UserRepository;
+import com.kstec.codemangement.model.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

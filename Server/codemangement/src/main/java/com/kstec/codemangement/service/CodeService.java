@@ -13,7 +13,7 @@ public interface CodeService {
 
     List<CodeResponseDto> getAllCodes();
 
-    List<CodeResponseDto> searchCodes(String searchType, String query, String startDate, String endDate, Boolean activated, Long parentCodeI);
+//    List<CodeResponseDto> searchCodes(String searchType, String query, String startDate, String endDate, Boolean activated, Long parentCodeI);
 
     CodeResponseDto createCode(CodeRequestDto codeRequestDto);
 

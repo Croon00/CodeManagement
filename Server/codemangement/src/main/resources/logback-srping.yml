@@ -1,0 +1,18 @@
+configuration:
+  status: WARN
+  appenders:
+    - console:
+        name: STDOUT
+        target: SYSTEM_OUT
+        encoder:
+          pattern: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+  loggers:
+    - logger:
+        name: com.kstec
+        level: DEBUG  # 개발 환경에서는 DEBUG, 운영에서는 INFO 추천
+
+    - root:
+        level: INFO
+        appender-ref:
+          - ref: STDOUT

@@ -16,8 +16,8 @@ import java.util.List;
 @Table(
         name = "Code",
         indexes = {
-                @Index(name = "idx_code_name", columnList = "codeName"), // 단일 컬럼 인덱스
-                @Index(name = "idx_code_value", columnList = "codeValue") // 단일 컬럼 인덱스
+                @Index(name = "idx_code_name", columnList = "code_name"),
+                @Index(name = "idx_code_value", columnList = "code_value")
         }
 )
 @AllArgsConstructor
@@ -44,22 +44,21 @@ public class Code {
     private boolean activated;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_code_id")
+    @JoinColumn(name = "parent_code_id", nullable = true)
     private Code parentCodeId;
 
     @OneToMany(mappedBy = "parentCodeId", fetch = FetchType.LAZY)
     private List<Code> childrenCodeId = new ArrayList<>();
-
 }

@@ -1,6 +1,7 @@
 package com.kstec.codemangement.service;
 
-import com.kstec.codemangement.model.Repository.UserRepository;
+import com.kstec.codemangement.exception.BadRequestException;
+import com.kstec.codemangement.model.repository.UserRepository;
 import com.kstec.codemangement.model.dto.requestdto.UserRequestDto;
 import com.kstec.codemangement.model.dto.responsedto.UserResponseDto;
 import com.kstec.codemangement.model.entity.User;
@@ -31,7 +32,7 @@ public class userServiceImpl implements UserService {
     public UserResponseDto registerUser(UserRequestDto userRequestDto) {
         // 중복된 loginId 확인
         if (userRepository.existsByLoginId(userRequestDto.getLoginId())) {
-            throw new RuntimeException("이미 존재하는 loginId입니다."); // 예외처리
+            throw new BadRequestException("이미 존재하는 loginId입니다: " + userRequestDto.getLoginId()); // 예외처리
         }
 
         // User 엔티티 생성

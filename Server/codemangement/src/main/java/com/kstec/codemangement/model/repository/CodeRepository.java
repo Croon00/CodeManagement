@@ -1,4 +1,4 @@
-package com.kstec.codemangement.model.Repository;
+package com.kstec.codemangement.model.repository;
 
 import com.kstec.codemangement.model.entity.Code;
 import org.springframework.data.jpa.repository.JpaRepository;

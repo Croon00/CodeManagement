@@ -5,10 +5,12 @@ import com.kstec.codemangement.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication API", description = "인증 관련 API")
@@ -30,6 +32,7 @@ public class AuthController {
             }
     )
     public ResponseEntity<?> refreshAccessToken() {
+        log.info("🔄 토큰 갱신 요청");
         try {
             String newAccessToken = authService.refreshAccessToken();
             return ResponseEntity.ok("{\"accessToken\": \"" + newAccessToken + "\"}");

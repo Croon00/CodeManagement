@@ -1,0 +1,25 @@
+
+{
+  "properties": {
+    "codeName": {
+      "type": "text",
+      "analyzer": "combined_analyzer"
+    },
+    "codeValue": {
+      "type": "text",
+      "analyzer": "combined_analyzer"
+    },
+    "codeMean": {
+      "type": "text",
+      "index": false
+    },
+    "createdAt": {
+      "type": "date",
+      "format": "date_optional_time"
+    },
+    "updatedAt": {
+      "type": "date",
+      "format": "date_optional_time"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "analysis": {
+    "analyzer": {
+      "combined_analyzer": {
+        "type": "custom",
+        "tokenizer": "edge_ngram_tokenizer",
+        "filter": ["lowercase", "shingle"]
+      }
+    },
+    "filter": {
+      "shingle": {
+        "type": "shingle",
+        "min_shingle_size": 2,
+        "max_shingle_size": 3,
+        "output_unigrams": true
+      }
+    },
+    "tokenizer": {
+      "edge_ngram_tokenizer": {
+        "type": "edge_ngram",
+        "min_gram": 3,
+        "max_gram": 10,
+        "token_chars": ["letter", "digit"]
+      }
+    }
+  }
+}
